@@ -6,7 +6,16 @@ palavraReservada = {'def': '41'}
 
 charArray = {',': ['15', 'VIRGULA'], ':': ['13', 'DOIS PONTOS'], '(': ['17', 'ABRE PARENT.'], ')': ['18', 'FECHA PARENT.']}
 
-rules = ['([0-9]+(.[0-9]+))', 'DECIMAL']
+caracteresEspeciais = {'!': ['01'],
+                        '@': ['02'],
+                        '#': ['03'],
+                        '$': ['04'],
+                        '%': ['05'],
+                        '&': ['06'],
+                        '*': ['07'],
+                        '?': ['08'],
+                        '~': ['09'],
+                        '^': ['10 ']}
 
 classificados = []
 nextWord = False
@@ -25,26 +34,42 @@ def readTxt():
     a = a.replace(':', ' : ')
     a = a.replace('(', ' ( ')
     a = a.replace(')', ' ) ')
+    a = a.replace('!', ' ! ')
+    a = a.replace('@', ' @ ')
+    a = a.replace('#', ' # ')
+    a = a.replace('$', ' $ ')
+    a = a.replace('%', ' % ')
+    a = a.replace('&', ' & ')
+    a = a.replace('*', ' * ')
+    a = a.replace('?', ' ? ')
+    a = a.replace('~', ' ~ ')
+    a = a.replace('^', ' ^ ')
     l = a.split(' ')
     for item in l:
         if (item != ''):
             f.append(item)
     return f
 
-def isPalavraReservada(word):
-    return word in palavraReservada
+def verificaNumero(palavra):
+    return re.match('^[0-9]', palavra) != None
 
-def isSpecialChar(word):
-    return word in charArray
+def verificaLetra(palavra):
+    return re.fullmatch('^[a-zA-Z0-9]{1,}$', palavra) != None
 
-def isIdentfier(word):
-    if re.match('^[0-9]', word) != None:
-        raise ValueError(word + ' Identificadores não podem iniciar com numerais')
-    if re.fullmatch('^[a-zA-Z0-9]{1,}$', word) != None:
+def verificarCaractereEspecial(palavra):
+    return palavra in caracteresEspeciais
+
+def verificarPalavraReservada(palavra):
+    return palavra in palavraReservada
+
+def isSpecialChar(palavra):
+    return palavra in charArray
+
+def verificarIdentificador(palavra):
+    if verificaNumero(palavra):
+        raise ValueError(palavra + ' Identificadores não podem iniciar com numerais')
+    if verificaLetra(palavra):
         return True
-
-def isNumber(word):
-    return re.fullmatch('^[0-9]{1,}$', word) != None
 
 def trataCaracter(lista, index, char):
     global nextWord
@@ -58,19 +83,22 @@ def trataCaracter(lista, index, char):
     else:
         classificados.append((keyChar[0], char, keyChar[1]))
 
-def validaExistencia(l, i, word):
+def validaExistencia(lista, index, palavra):
     global specialChar
-    if isPalavraReservada(word):
-        classificados.append((palavraReservada[word], word, 'PALAVRA RESERVADA'))
+    if verificarPalavraReservada(palavra):
+        classificados.append((palavraReservada[palavra], palavra, 'PALAVRA RESERVADA'))
         return
-    if isSpecialChar(word):
-        trataCaracter(l, i, word)
+    if isSpecialChar(palavra):
+        trataCaracter(lista, index, palavra)
         return
-    if isIdentfier(word):
-        classificados.append(('41', word, 'IDENTIFICADOR'))
+    if verificarIdentificador(palavra):
+        classificados.append(('rules', palavra, 'IDENTIFICADOR'))
+        return
+    if verificarCaractereEspecial(palavra):
+        classificados.append((caracteresEspeciais, palavra, 'CARACTERES ESPECIAS'))
         return
 
-    raise ValueError(word + ' Não é reconhecido como comando valido.')
+    raise ValueError(palavra + ' Não é reconhecido como comando valido.')
 
 def validaString(char):
     global isString
@@ -94,7 +122,7 @@ def validaString(char):
 def mostrar():
     global classificados
     classificados = np.array(classificados)
-    for i, p in enumerate(' '):
+    for p in enumerate(' '):
         data = pd.DataFrame({'Token': classificados[:, 1], 'Descrição': classificados[:, 2]})
         print(data)
 
