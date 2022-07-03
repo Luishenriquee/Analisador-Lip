@@ -19,10 +19,7 @@ caracteresEspeciais = {'!': ['01'],
 
 classificados = []
 nextWord = False
-isNum = False
 isString = False
-numeral = ''
-fullComment = ''
 
 def readTxt():
     print('-- Lendo arquivo de texto --\n')
@@ -62,7 +59,7 @@ def verificarCaractereEspecial(palavra):
 def verificarPalavraReservada(palavra):
     return palavra in palavraReservada
 
-def isSpecialChar(palavra):
+def verificarSpecialChar(palavra):
     return palavra in charArray
 
 def verificarIdentificador(palavra):
@@ -72,8 +69,6 @@ def verificarIdentificador(palavra):
         return True
 
 def trataCaracter(lista, index, char):
-    global nextWord
-    global numeral
     keyChar = charArray[char]
     if keyChar[0] == ' ':
         if lista[index + 1].upper() in palavraReservada:
@@ -84,11 +79,10 @@ def trataCaracter(lista, index, char):
         classificados.append((keyChar[0], char, keyChar[1]))
 
 def validaExistencia(lista, index, palavra):
-    global specialChar
     if verificarPalavraReservada(palavra):
         classificados.append((palavraReservada[palavra], palavra, 'PALAVRA RESERVADA'))
         return
-    if isSpecialChar(palavra):
+    if verificarSpecialChar(palavra):
         trataCaracter(lista, index, palavra)
         return
     if verificarIdentificador(palavra):
@@ -103,20 +97,15 @@ def validaExistencia(lista, index, palavra):
 def validaString(char):
     global isString
     global nextWord
-    global fullComment
     if char == '"':
         if isString:
             isString = False
-            fullComment += char
-            classificados.append(('100', fullComment, 'STRING'))
-            fullComment = ''
+            classificados.append(('100', 'STRING'))
             nextWord = True
         else:
             isString = True
-            fullComment += char
             nextWord = True
     elif isString:
-        fullComment += ' ' + char
         nextWord = True
 
 def mostrar():
@@ -128,10 +117,6 @@ def mostrar():
 
 def cursor(l):
     global nextWord
-    global comentario
-    global fullComment
-    global isNum
-    global classificados
     global isString
     try:
         for i, p in enumerate(l):
